@@ -1,0 +1,16 @@
+__pycache__/
+Temp*
+temp*
+TEMP*
+Pseudocode.md
+Borradores/
+Cases/
+*generator*
+*.obj
+*.png
+*.jpg
+*.jpeg
+.github/
+.vscode/
+measurements.py
+Test/
