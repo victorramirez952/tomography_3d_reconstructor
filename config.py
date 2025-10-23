@@ -31,16 +31,12 @@ SMOOTHING_ITERATIONS = 3 # Number of morphological smoothing iterations
 # =============================================================================
 SHOW_3D_VISUALIZATION = False    # Set to False to skip 3D visualization display
 EXPORT_OBJ_MODEL = True         # Set to False to skip OBJ file export
-SHOW_SLICE_PREVIEW = False      # Show preview of selected slices
-NUM_PREVIEW_SLICES = 9          # Number of slices to show in preview
 
 # =============================================================================
 # OUTPUT FILES
 # =============================================================================
 OBJ_FILENAME = "tomography_model.obj"
-VISUALIZATION_PNG = "tomography_3d_reconstruction.png"
 INTERACTIVE_HTML = "tomography_3d_interactive.html"
-SLICE_PREVIEW_PNG = "slice_visualization.png"
 
 # =============================================================================
 # ADVANCED PROCESSING OPTIONS

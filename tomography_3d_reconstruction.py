@@ -193,18 +193,7 @@ class Tomography3DReconstruction:
             
             for i in range(iterations):
                 smoothed_data = binary_closing(smoothed_data)
-            
-            if create_manifold:
-                try:
-                    struct_elem = ball(2)
-                    smoothed_data = binary_closing(smoothed_data, structure=struct_elem)
-                except:
-                    smoothed_data = binary_closing(smoothed_data)
-                
-                if SCIPY_AVAILABLE:
-                    for z in range(smoothed_data.shape[0]):
-                        smoothed_data[z] = ndimage.binary_fill_holes(smoothed_data[z])
-            
+                        
         except Exception as e:
             for i in range(iterations):
                 smoothed_data = binary_closing(smoothed_data)
@@ -299,44 +288,10 @@ class Tomography3DReconstruction:
         
         return points_mm
     
-    def visualize_slices(self, num_slices_to_show: int = 9, save_path: str = "slice_visualization.png"):
-        """Visualize 2D slices."""
-        if not self.mask_images:
-            return
-        
-        slice_indices = np.linspace(0, len(self.mask_images)-1, 
-                                  min(num_slices_to_show, len(self.mask_images)), 
-                                  dtype=int)
-        
-        cols = min(3, len(slice_indices))
-        rows = (len(slice_indices) + cols - 1) // cols
-        
-        fig, axes = plt.subplots(rows, cols, figsize=(12, 4*rows))
-        if rows == 1 and cols == 1:
-            axes = [axes]
-        elif rows == 1 or cols == 1:
-            axes = axes.flatten()
-        else:
-            axes = axes.flatten()
-        
-        for i, slice_idx in enumerate(slice_indices):
-            ax = axes[i] if len(slice_indices) > 1 else axes
-            
-            ax.imshow(self.mask_images[slice_idx], cmap='gray')
-            ax.set_title(f'Slice {slice_idx+1}\nZ={slice_idx * self.mm_per_slice:.2f}mm')
-            ax.axis('off')
-        
-        for i in range(len(slice_indices), len(axes)):
-            axes[i].axis('off')
-        
-        plt.tight_layout()
-        plt.savefig(save_path, dpi=150, bbox_inches='tight')
-        plt.show()
-    
-    def visualize_3d_solid_matplotlib(self, smooth: bool = True, save_path: str = "3d_reconstruction.png"):
+    def visualize_3d_solid_matplotlib(self, smooth: bool = True):
         """Create 3D solid visualization."""
         if not SKIMAGE_AVAILABLE:
-            self.visualize_3d_voxels_matplotlib(save_path=save_path)
+            self.visualize_3d_voxels_matplotlib()
             return
         
         surface_result = self.extract_manifold_surface(smooth=smooth, manifold=True)
@@ -374,10 +329,9 @@ class Tomography3DReconstruction:
         ax.set_zlim(mid_z - max_range, mid_z + max_range)
         
         plt.tight_layout()
-        plt.savefig(save_path, dpi=150, bbox_inches='tight')
         plt.show()
 
-    def visualize_3d_voxels_matplotlib(self, smooth: bool = True, save_path: str = "3d_voxel_reconstruction.png"):
+    def visualize_3d_voxels_matplotlib(self, smooth: bool = True):
         """Create voxel visualization."""
         if self.voxel_data is None:
             self.create_voxel_data()
@@ -398,7 +352,6 @@ class Tomography3DReconstruction:
         ax.set_title('3D Voxel Reconstruction')
         
         plt.tight_layout()
-        plt.savefig(save_path, dpi=150, bbox_inches='tight')
         plt.show()
     
     def visualize_3d_interactive_mesh(self, smooth: bool = True, save_path: str = "3d_reconstruction_interactive.html"):
@@ -567,12 +520,6 @@ def main():
             print("Failed to load masks")
             return 1
         
-        if config.SHOW_SLICE_PREVIEW:
-            reconstructor.visualize_slices(
-                num_slices_to_show=config.NUM_PREVIEW_SLICES,
-                save_path=config.SLICE_PREVIEW_PNG
-            )
-        
         print("Creating voxel data...")
         reconstructor.create_voxel_data(close_ends=config.CLOSE_VOLUME_ENDS)
         
@@ -582,8 +529,7 @@ def main():
             print("Creating visualizations...")
             
             reconstructor.visualize_3d_solid_matplotlib(
-                smooth=config.APPLY_SMOOTHING,
-                save_path=config.VISUALIZATION_PNG
+                smooth=config.APPLY_SMOOTHING
             )
             
             if PLOTLY_AVAILABLE:
