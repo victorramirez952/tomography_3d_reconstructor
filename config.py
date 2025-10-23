@@ -16,7 +16,6 @@ TOTAL_DEPTH_MM = 8.75      # Total depth covered by all slices in mm
 # =============================================================================
 # DATA SOURCE PATH
 # =============================================================================
-# Path where mask images are located (files starting with "Mask_")
 DATA_PATH = "/home/vector64/Documents/UDEM/9NO_SEMESTRE/PEF/tomography_3d/Cases/Krim"
 
 # =============================================================================
