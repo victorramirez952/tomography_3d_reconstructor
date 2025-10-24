@@ -31,7 +31,7 @@ class SurfaceExtractor:
     def __init__(self):
         pass
     
-    def extract_manifold_surface(self, volume_data: np.ndarray, mm_per_slice: float, 
+    def extract_manifold_surface(self, volume_data: np.ndarray, slice_depths: np.ndarray, 
                                 mm_per_pixel_y: float, mm_per_pixel_x: float,
                                 smooth: bool = True, manifold: bool = True, 
                                 add_padding: bool = True) -> Optional[Tuple[np.ndarray, np.ndarray]]:
@@ -59,7 +59,8 @@ class SurfaceExtractor:
                 vertices[:, 1] -= 1  
                 vertices[:, 2] -= 1
             
-            vertices[:, 0] *= mm_per_slice
+            # Apply variable slice depths
+            self._apply_variable_slice_depths(vertices, slice_depths, add_padding)
             vertices[:, 1] *= mm_per_pixel_y
             vertices[:, 2] *= mm_per_pixel_x
             
@@ -77,6 +78,39 @@ class SurfaceExtractor:
         """Add padding around volume."""
         padded_volume = np.pad(volume_data, pad_size, mode='constant', constant_values=False)
         return padded_volume
+    
+    def _apply_variable_slice_depths(self, vertices: np.ndarray, slice_depths: np.ndarray, add_padding: bool = True) -> None:
+        """Apply variable slice depths to vertex z-coordinates."""
+        if len(slice_depths) == 0:
+            # No slice depths available, keep original coordinates
+            return
+            
+        if add_padding:
+            # Account for padding adjustment
+            adjusted_slice_depths = np.concatenate([[slice_depths[0]], slice_depths, [slice_depths[-1]]])
+        else:
+            adjusted_slice_depths = slice_depths
+        
+        # Calculate cumulative depths for z-coordinate mapping
+        cumulative_depths = np.cumsum(np.concatenate([[0], adjusted_slice_depths]))
+        
+        # Map vertex z-coordinates using linear interpolation
+        for i in range(len(vertices)):
+            z_idx = vertices[i, 0]
+            if z_idx < 0:
+                vertices[i, 0] = 0
+            elif z_idx >= len(cumulative_depths) - 1:
+                vertices[i, 0] = cumulative_depths[-1]
+            else:
+                # Linear interpolation between slices
+                lower_idx = int(np.floor(z_idx))
+                upper_idx = lower_idx + 1
+                fraction = z_idx - lower_idx
+                
+                if upper_idx < len(cumulative_depths):
+                    vertices[i, 0] = cumulative_depths[lower_idx] + fraction * adjusted_slice_depths[min(lower_idx, len(adjusted_slice_depths)-1)]
+                else:
+                    vertices[i, 0] = cumulative_depths[lower_idx]
     
     def _ensure_manifold_mesh(self, vertices: np.ndarray, faces: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         """Clean mesh for manifold properties."""

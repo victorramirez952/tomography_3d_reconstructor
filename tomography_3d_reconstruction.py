@@ -38,32 +38,69 @@ class Tomography3DReconstruction:
         # Resolution calculations
         self.mm_per_pixel_x = None
         self.mm_per_pixel_y = None
-        self.mm_per_slice = None
+        self.slice_depths = None  # Array of depths per slice
+        self.side_0_count = 0
+        self.side_1_count = 0
+        self.side_2_count = 0
         
-    def load_mask_images(self, directory: str = ".", threshold: int = 200) -> bool:
-        """Load mask images using ImageLoader."""
-        success = self.image_loader.load_mask_images(directory, threshold)
+    def load_mask_images(self, directory: str = ".", threshold: int = 200, load_sides: list = [True, True, True]) -> bool:
+        """Load mask images using ImageLoader with side structure.
+        
+        Args:
+            directory: Path containing the Section folders
+            threshold: Threshold for mask binarization
+            load_sides: Boolean array [Side_0, Side_1, Side_2] indicating which folders to load
+        """
+        success = self.image_loader.load_mask_images(directory, threshold, load_sides)
         
         if success:
             # Calculate resolution
             width, height = self.image_loader.get_image_dimensions()
             num_slices = self.image_loader.get_num_slices()
+            self.side_0_count, self.side_1_count, self.side_2_count = self.image_loader.get_side_counts()
             
             self.mm_per_pixel_x = self.x_length_mm / width
             self.mm_per_pixel_y = self.y_length_mm / height
-            self.mm_per_slice = self.total_depth_mm / num_slices
             
-            print(f"Loaded {num_slices} images - {self.mm_per_slice:.3f} mm/slice")
+            # Calculate depth per slice based on side structure
+            if self.side_1_count > 0:
+                side_1_depth_per_slice = self.total_depth_mm / self.side_1_count
+                # Side_0 and Side_2 total depth = 2 * side_1_depth_per_slice
+                side_0_2_total_depth = 2 * side_1_depth_per_slice
+                print(f"Side_1 depth per slice: {side_1_depth_per_slice:.3f} mm")
+                print(f"Side_0/Side_2 total depth: {side_0_2_total_depth:.3f} mm each")
+                if self.side_0_count > 0:
+                    side_0_depth_per_slice = side_0_2_total_depth / self.side_0_count
+                    print(f"Side_0 depth per slice: {side_0_depth_per_slice:.3f} mm")
+                if self.side_2_count > 0:
+                    side_2_depth_per_slice = side_0_2_total_depth / self.side_2_count
+                    print(f"Side_2 depth per slice: {side_2_depth_per_slice:.3f} mm")
+            else:
+                if num_slices > 0:
+                    side_1_depth_per_slice = self.total_depth_mm / num_slices
+                    print(f"Uniform depth per slice: {side_1_depth_per_slice:.3f} mm")
+            
+            print(f"Loaded {num_slices} images - Sides: {self.side_0_count}/{self.side_1_count}/{self.side_2_count}")
+            print(f"Sequential order: Side_0→Side_1→Side_2 maintained in voxel array")
         
         return success
     
     def create_voxel_data(self, close_ends: bool = True) -> np.ndarray:
-        """Create 3D voxel data using VoxelProcessor."""
+        """Create 3D voxel data using VoxelProcessor with side information."""
         mask_images = self.image_loader.get_mask_images()
-        return self.voxel_processor.create_voxel_data(mask_images, close_ends)
+        
+        voxel_data = self.voxel_processor.create_voxel_data(
+            mask_images, close_ends, 
+            self.side_0_count, self.side_1_count, self.side_2_count
+        )
+        
+        # Calculate slice depths array
+        self.slice_depths = self.voxel_processor.calculate_slice_depths(self.total_depth_mm)
+        
+        return voxel_data
     
     def calculate_volume(self, use_processed_data: bool = False) -> float:
-        """Calculate volume in mm³."""
+        """Calculate volume in mm³ using variable slice depths."""
         if self.voxel_processor.voxel_data is None:
             self.create_voxel_data(close_ends=True)
         
@@ -76,8 +113,8 @@ class Tomography3DReconstruction:
         else:
             volume_data = self.voxel_processor.voxel_data
         
-        return self.volume_calculator.calculate_voxel_volume(
-            volume_data, self.mm_per_pixel_x, self.mm_per_pixel_y, self.mm_per_slice
+        return self.volume_calculator.calculate_voxel_volume_variable_depth(
+            volume_data, self.mm_per_pixel_x, self.mm_per_pixel_y, self.slice_depths
         )
     
     def calculate_mesh_volume_from_obj(self) -> Optional[float]:
@@ -92,7 +129,7 @@ class Tomography3DReconstruction:
         )
         
         surface_result = self.surface_extractor.extract_manifold_surface(
-            volume_data, self.mm_per_slice, self.mm_per_pixel_y, self.mm_per_pixel_x,
+            volume_data, self.slice_depths, self.mm_per_pixel_y, self.mm_per_pixel_x,
             smooth=True, manifold=True, add_padding=config.ADD_VOLUME_PADDING
         )
         
@@ -114,7 +151,7 @@ class Tomography3DReconstruction:
             )
         
         surface_result = self.surface_extractor.extract_manifold_surface(
-            volume_data, self.mm_per_slice, self.mm_per_pixel_y, self.mm_per_pixel_x,
+            volume_data, self.slice_depths, self.mm_per_pixel_y, self.mm_per_pixel_x,
             smooth=smooth, manifold=True, add_padding=config.ADD_VOLUME_PADDING
         )
         
@@ -138,7 +175,7 @@ class Tomography3DReconstruction:
             )
         
         surface_result = self.surface_extractor.extract_manifold_surface(
-            volume_data, self.mm_per_slice, self.mm_per_pixel_y, self.mm_per_pixel_x,
+            volume_data, self.slice_depths, self.mm_per_pixel_y, self.mm_per_pixel_x,
             smooth=smooth, manifold=True, add_padding=config.ADD_VOLUME_PADDING
         )
         
@@ -146,7 +183,7 @@ class Tomography3DReconstruction:
             # Fallback to point cloud
             points = self.voxel_processor.generate_point_cloud(
                 volume_data, self.mm_per_pixel_x, self.mm_per_pixel_y, 
-                self.mm_per_slice, config.SUBSAMPLE_FACTOR
+                self.slice_depths, config.SUBSAMPLE_FACTOR
             )
             self.visualizer.visualize_3d_interactive_mesh(points=points, save_path=save_path)
             return
@@ -174,7 +211,7 @@ class Tomography3DReconstruction:
         )
         
         surface_result = self.surface_extractor.extract_manifold_surface(
-            volume_data, self.mm_per_slice, self.mm_per_pixel_y, self.mm_per_pixel_x,
+            volume_data, self.slice_depths, self.mm_per_pixel_y, self.mm_per_pixel_x,
             smooth=True, manifold=True, add_padding=config.ADD_VOLUME_PADDING
         )
         
@@ -187,7 +224,7 @@ class Tomography3DReconstruction:
         
         return self.volume_calculator.analyze_object_properties(
             self.voxel_processor.voxel_data, processed_voxel_volume, mesh_volume, surface_area,
-            self.mm_per_pixel_x, self.mm_per_pixel_y, self.mm_per_slice,
+            self.mm_per_pixel_x, self.mm_per_pixel_y, self.slice_depths,
             self.x_length_mm, self.y_length_mm, self.total_depth_mm
         )
     
@@ -203,7 +240,7 @@ class Tomography3DReconstruction:
             )
         
         surface_result = self.surface_extractor.extract_manifold_surface(
-            volume_data, self.mm_per_slice, self.mm_per_pixel_y, self.mm_per_pixel_x,
+            volume_data, self.slice_depths, self.mm_per_pixel_y, self.mm_per_pixel_x,
             smooth=smooth, manifold=True, add_padding=config.ADD_VOLUME_PADDING
         )
         
@@ -226,7 +263,7 @@ def main():
         )
         
         print("Loading masks...")
-        if not reconstructor.load_mask_images(directory=config.DATA_PATH, threshold=config.THRESHOLD):
+        if not reconstructor.load_mask_images(directory=config.DATA_PATH, threshold=config.THRESHOLD, load_sides=config.LOAD_SIDES):
             print("Failed to load masks")
             return 1
         

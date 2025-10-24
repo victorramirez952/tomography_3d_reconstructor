@@ -9,14 +9,17 @@ Modify these values according to your specific setup and requirements.
 # =============================================================================
 # PHYSICAL DIMENSIONS (in millimeters)
 # =============================================================================
-X_LENGTH_MM = 64.62      # Width of images in mm
-Y_LENGTH_MM = 43.08      # Height of images in mm  
-TOTAL_DEPTH_MM = 8.75      # Total depth covered by all slices in mm
+X_LENGTH_MM = 165.7      # Width of images in mm
+Y_LENGTH_MM = 110.2      # Height of images in mm  
+TOTAL_DEPTH_MM = 11.25    # Depth of Side_1 images (main body) in mm
 
 # =============================================================================
 # DATA SOURCE PATH
 # =============================================================================
-DATA_PATH = "/home/vector64/Documents/UDEM/9NO_SEMESTRE/PEF/tomography_3d/Cases/Krim"
+# Path should contain three subfolders: Side_0, Side_1, Side_2
+# Side_1: Main body (~90% of shape), depth = TOTAL_DEPTH_MM
+# Side_0 & Side_2: Closing ends, each total depth = 2 * (TOTAL_DEPTH_MM / Side_1_count)
+DATA_PATH = "/home/vector64/Documents/UDEM/9NO_SEMESTRE/PEF/tomography_3d/Cases/Maria_Guadalupe/"
 
 # =============================================================================
 # PROCESSING PARAMETERS
@@ -24,6 +27,9 @@ DATA_PATH = "/home/vector64/Documents/UDEM/9NO_SEMESTRE/PEF/tomography_3d/Cases/
 THRESHOLD = 200          # Threshold for mask binarization (0-255)
 SUBSAMPLE_FACTOR = 2     # Factor for subsampling visualization points
 SMOOTHING_ITERATIONS = 3 # Number of morphological smoothing iterations
+
+# Which sides to load: [Side_0, Side_1, Side_2]
+LOAD_SIDES = [True, True, True]  # Set to False to skip specific sides
 
 # =============================================================================
 # VISUALIZATION AND EXPORT CONTROL
