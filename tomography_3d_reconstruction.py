@@ -272,16 +272,17 @@ def main():
         
         properties = reconstructor.analyze_object_properties()
         
+        # Always save interactive HTML visualization
+        print("Saving interactive HTML...")
+        reconstructor.visualize_3d_interactive_mesh(
+            smooth=config.APPLY_SMOOTHING,
+            save_path=config.INTERACTIVE_HTML
+        )
+        
         if config.SHOW_3D_VISUALIZATION:
-            print("Creating visualizations...")
-            
+            print("Creating matplotlib visualization...")
             reconstructor.visualize_3d_solid_matplotlib(
                 smooth=config.APPLY_SMOOTHING
-            )
-            
-            reconstructor.visualize_3d_interactive_mesh(
-                smooth=config.APPLY_SMOOTHING,
-                save_path=config.INTERACTIVE_HTML
             )
         
         if config.EXPORT_OBJ_MODEL:

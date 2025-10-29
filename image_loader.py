@@ -24,13 +24,16 @@ class ImageLoader:
         self.side_1_count = 0
         self.side_2_count = 0
     
-    def _extract_numeric_suffix(self, filename: str) -> int:
+    def _extract_numeric_suffix(self, filename: str) -> tuple:
         """Extract numeric suffix from filename for proper sorting."""
-        # Extract number from patterns like "Mask_123.png" or "mask_45.png"
-        match = re.search(r'_(\d+)\.png$', filename, re.IGNORECASE)
+        # Handle both patterns: "Mask_Something_123.png" and "Mask_Something_123.45.png"
+        # For interpolated files: first number is main, second is interpolation index
+        match = re.search(r'_(\d+)(?:\.(\d+))?\.png$', filename, re.IGNORECASE)
         if match:
-            return int(match.group(1))
-        return 0  # Default for files without numeric suffix
+            main_number = int(match.group(1))
+            interp_index = int(match.group(2)) if match.group(2) else 0
+            return (main_number, interp_index)
+        return (0, 0)  # Default for files without numeric suffix
     
     def load_mask_images(self, directory: str = ".", threshold: int = 200, load_sides: list = [True, True, True]) -> bool:
         """Load mask images with prefix 'Mask_' from Section_0, Section_1, Section_2 subfolders.
@@ -72,9 +75,9 @@ class ImageLoader:
                 if len(side_files) > 0:
                     first_file = os.path.basename(side_files[0])
                     last_file = os.path.basename(side_files[-1])
-                    first_num = self._extract_numeric_suffix(side_files[0])
-                    last_num = self._extract_numeric_suffix(side_files[-1])
-                    print(f"  Range: {first_file} ({first_num}) → {last_file} ({last_num})")
+                    first_nums = self._extract_numeric_suffix(side_files[0])
+                    last_nums = self._extract_numeric_suffix(side_files[-1])
+                    print(f"  Range: {first_file} ({first_nums[0]}.{first_nums[1]}) → {last_file} ({last_nums[0]}.{last_nums[1]})")
                     
                 all_mask_files.extend(side_files)
 

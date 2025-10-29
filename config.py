@@ -11,7 +11,7 @@ Modify these values according to your specific setup and requirements.
 # =============================================================================
 X_LENGTH_MM = 165.7      # Width of images in mm
 Y_LENGTH_MM = 110.2      # Height of images in mm  
-TOTAL_DEPTH_MM = 11.25    # Depth of Side_1 images (main body) in mm
+TOTAL_DEPTH_MM =  11.25   # Depth of Side_1 images (main body) in mm
 
 # =============================================================================
 # DATA SOURCE PATH
@@ -19,7 +19,7 @@ TOTAL_DEPTH_MM = 11.25    # Depth of Side_1 images (main body) in mm
 # Path should contain three subfolders: Side_0, Side_1, Side_2
 # Side_1: Main body (~90% of shape), depth = TOTAL_DEPTH_MM
 # Side_0 & Side_2: Closing ends, each total depth = 2 * (TOTAL_DEPTH_MM / Side_1_count)
-DATA_PATH = "/home/vector64/Documents/UDEM/9NO_SEMESTRE/PEF/tomography_3d/Cases/Maria_Guadalupe/"
+DATA_PATH = "/home/vector64/Documents/UDEM/9NO_SEMESTRE/PEF/Analisis_tomografia_reconstruccion/Patient_M/Cortes_tomografias"
 
 # =============================================================================
 # PROCESSING PARAMETERS
@@ -34,13 +34,14 @@ LOAD_SIDES = [True, True, True]  # Set to False to skip specific sides
 # =============================================================================
 # VISUALIZATION AND EXPORT CONTROL
 # =============================================================================
-SHOW_3D_VISUALIZATION = False    # Set to False to skip 3D visualization display
+SHOW_3D_VISUALIZATION = False    # Set to False to skip matplotlib 3D visualization display
 EXPORT_OBJ_MODEL = True         # Set to False to skip OBJ file export
+# Note: Interactive HTML is always saved regardless of SHOW_3D_VISUALIZATION
 
 # =============================================================================
 # OUTPUT FILES
 # =============================================================================
-OBJ_FILENAME = "tomography_model.obj"
+OBJ_FILENAME = "/home/vector64/Documents/UDEM/9NO_SEMESTRE/PEF/Analisis_tomografia_reconstruccion/Patient_M/Models/Patient_m_tomography_model_ind.obj"
 INTERACTIVE_HTML = "tomography_3d_interactive.html"
 
 # =============================================================================
