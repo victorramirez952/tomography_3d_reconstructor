@@ -25,15 +25,14 @@ class ImageLoader:
         self.side_2_count = 0
     
     def _extract_numeric_suffix(self, filename: str) -> tuple:
-        """Extract numeric suffix from filename for proper sorting."""
-        # Handle both patterns: "Mask_Something_123.png" and "Mask_Something_123.45.png"
-        # For interpolated files: first number is main, second is interpolation index
-        match = re.search(r'_(\d+)(?:\.(\d+))?\.png$', filename, re.IGNORECASE)
+        """Extract numeric suffix from filename for proper sorting (handles negative numbers)."""
+        # Handle patterns: "Mask_Something_123.png", "Mask_Something_-14.png", "Mask_Something_123.45.png"
+        match = re.search(r'_(-?\d+)(?:\.(\d+))?\.png$', filename, re.IGNORECASE)
         if match:
             main_number = int(match.group(1))
             interp_index = int(match.group(2)) if match.group(2) else 0
             return (main_number, interp_index)
-        return (0, 0)  # Default for files without numeric suffix
+        return (0, 0)
     
     def load_mask_images(self, directory: str = ".", threshold: int = 200, load_sides: list = [True, True, True]) -> bool:
         """Load mask images with prefix 'Mask_' from Section_0, Section_1, Section_2 subfolders.

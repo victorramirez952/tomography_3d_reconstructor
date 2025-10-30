@@ -13,3 +13,6 @@ Cases/
 .vscode/
 Test/
 Requirements*
+log*
+*.html
+Configuraciones.md
