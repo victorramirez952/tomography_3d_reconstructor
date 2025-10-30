@@ -22,11 +22,11 @@ def generate_slices_from_mask(mask_path, n_slices, output_directory, num_start, 
         print(f"Error: {e}")
 
 def main():
-    mask_path = "/home/vector64/Documents/UDEM/9NO_SEMESTRE/PEF/Analisis_tomografia_reconstruccion/Patient_B/Cortes_tomografías/Section_1/Mask_Bellaney_117.png"
+    mask_path = "/home/vector64/Documents/Patient_B/Cortes_tomografías/Section_1/Mask_Patient_1.png"
     n_slices = 25
-    output_directory = "/home/vector64/Documents/UDEM/9NO_SEMESTRE/PEF/Analisis_tomografia_reconstruccion/Patient_B/Cortes_tomografías/Section_02"
-    num_start = 120
-    increase = True
+    output_directory = "/home/vector64/Documents/Patient_B/Cortes_tomografías/Section_0"
+    num_start = 1
+    increase = False
     
     generate_slices_from_mask(mask_path, n_slices, output_directory, num_start, increase)
 

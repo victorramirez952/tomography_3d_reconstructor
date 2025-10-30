@@ -19,7 +19,7 @@ TOTAL_DEPTH_MM =  11.25   # Depth of Side_1 images (main body) in mm
 # Path should contain three subfolders: Side_0, Side_1, Side_2
 # Side_1: Main body (~90% of shape), depth = TOTAL_DEPTH_MM
 # Side_0 & Side_2: Closing ends, each total depth = 2 * (TOTAL_DEPTH_MM / Side_1_count)
-DATA_PATH = "/home/vector64/Documents/UDEM/9NO_SEMESTRE/PEF/Analisis_tomografia_reconstruccion/Patient_B/Cortes_tomografías"
+DATA_PATH = "/home/vector64/Documents/Patient_B/Cortes_tomografías"
 
 # =============================================================================
 # PROCESSING PARAMETERS
@@ -41,7 +41,7 @@ EXPORT_OBJ_MODEL = True         # Set to False to skip OBJ file export
 # =============================================================================
 # OUTPUT FILES
 # =============================================================================
-OBJ_FILENAME = "/home/vector64/Documents/UDEM/9NO_SEMESTRE/PEF/Analisis_tomografia_reconstruccion/Patient_B/Models/test_tomography_3d_model.obj"
+OBJ_FILENAME = "/home/vector64/Documents/Patient_B/Models/patient_b_tomography_3d_model.obj"
 INTERACTIVE_HTML = "tomography_3d_interactive.html"
 
 # =============================================================================
