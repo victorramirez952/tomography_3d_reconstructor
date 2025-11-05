@@ -15,7 +15,7 @@ from voxel_processor import VoxelProcessor
 from surface_extractor import SurfaceExtractor
 from visualizer import Visualizer
 from volume_calculator import VolumeCalculator
-from obj_exporter import OBJExporter
+from glb_exporter import GLBExporter
 
 
 class Tomography3DReconstruction:
@@ -33,7 +33,7 @@ class Tomography3DReconstruction:
         self.surface_extractor = SurfaceExtractor()
         self.visualizer = Visualizer()
         self.volume_calculator = VolumeCalculator()
-        self.obj_exporter = OBJExporter()
+        self.glb_exporter = GLBExporter()
         
         # Resolution calculations
         self.mm_per_pixel_x = None
@@ -117,7 +117,7 @@ class Tomography3DReconstruction:
             volume_data, self.mm_per_pixel_x, self.mm_per_pixel_y, self.slice_depths
         )
     
-    def calculate_mesh_volume_from_obj(self) -> Optional[float]:
+    def calculate_mesh_volume_from_glb(self) -> Optional[float]:
         """Calculate mesh volume using SurfaceExtractor."""
         if self.voxel_processor.voxel_data is None:
             return None
@@ -200,7 +200,7 @@ class Tomography3DReconstruction:
         
         voxel_volume = self.calculate_volume(use_processed_data=False)
         processed_voxel_volume = self.calculate_volume(use_processed_data=True) 
-        mesh_volume = self.calculate_mesh_volume_from_obj()
+        mesh_volume = self.calculate_mesh_volume_from_glb()
         
         # Calculate surface area
         surface_area = None
@@ -228,8 +228,9 @@ class Tomography3DReconstruction:
             self.x_length_mm, self.y_length_mm, self.total_depth_mm
         )
     
-    def export_to_obj(self, filename: str = "tomography_model.obj", smooth: bool = True) -> bool:
-        """Export 3D model to OBJ format using OBJExporter."""
+    def export_to_glb(self, filename: str = "tomography_model.glb", smooth: bool = True,
+                     highlight_layers: bool = True, highlight_thickness_mm: float = 1.0) -> bool:
+        """Export 3D model to GLB format with optional layer highlighting."""
         if self.voxel_processor.voxel_data is None:
             return False
             
@@ -248,7 +249,23 @@ class Tomography3DReconstruction:
             return False
         
         vertices, faces = surface_result
-        return self.obj_exporter.export_to_obj(vertices, faces, filename)
+        
+        # Create vertex colors for layer highlighting
+        vertex_colors = None
+        if highlight_layers and self.side_1_count > 0:
+            first_section1_slice = self.side_0_count
+            last_section1_slice = self.side_0_count + self.side_1_count - 1
+            
+            vertex_colors = self.glb_exporter.create_layer_colors(
+                vertices, self.slice_depths,
+                first_section1_slice, last_section1_slice,
+                highlight_thickness_mm
+            )
+            
+            print(f"Highlighting: First Section_1 slice (index {first_section1_slice}) in RED")
+            print(f"Highlighting: Last Section_1 slice (index {last_section1_slice}) in BLUE")
+        
+        return self.glb_exporter.export_to_glb(vertices, faces, filename, vertex_colors)
 
 
 def main():
@@ -285,11 +302,13 @@ def main():
                 smooth=config.APPLY_SMOOTHING
             )
         
-        if config.EXPORT_OBJ_MODEL:
-            print("Exporting OBJ...")
-            success = reconstructor.export_to_obj(
-                filename=config.OBJ_FILENAME,
-                smooth=config.APPLY_SMOOTHING
+        if config.EXPORT_GLB_MODEL:
+            print("Exporting GLB...")
+            success = reconstructor.export_to_glb(
+                filename=config.GLB_FILENAME,
+                smooth=config.APPLY_SMOOTHING,
+                highlight_layers=config.HIGHLIGHT_SECTION1_LAYERS,
+                highlight_thickness_mm=config.HIGHLIGHT_THICKNESS_MM
             )
         
         print("\nReconstruction complete!")

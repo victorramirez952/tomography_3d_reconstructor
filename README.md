@@ -113,3 +113,8 @@ visualizer.py                      Visualización 3D
 volume_calculator.py               Cálculos de volumen
 obj_exporter.py                    Exportación de archivos OBJ
 ```
+
+## Resultado
+El resultado incluye un modelo 3D exportado en formato OBJ y una visualización HTML interactiva del modelo reconstruido.
+
+El modelo 3D tiene resaltada en rojo la primera capa y en azul la última capa de la sección principal (Section_1) para facilitar la identificación de los límites del escaneo original.

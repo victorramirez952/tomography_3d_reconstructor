@@ -9,9 +9,9 @@ Modify these values according to your specific setup and requirements.
 # =============================================================================
 # PHYSICAL DIMENSIONS (in millimeters)
 # =============================================================================
-X_LENGTH_MM = 132.7      # Width of images in mm
-Y_LENGTH_MM = 88.31      # Height of images in mm  
-TOTAL_DEPTH_MM =  11.25   # Depth of Side_1 images (main body) in mm
+X_LENGTH_MM = 143.1      # Width of images in mm
+Y_LENGTH_MM = 95.03      # Height of images in mm  
+TOTAL_DEPTH_MM =  6   # Depth of Side_1 images (main body) in mm
 
 # =============================================================================
 # DATA SOURCE PATH
@@ -19,7 +19,7 @@ TOTAL_DEPTH_MM =  11.25   # Depth of Side_1 images (main body) in mm
 # Path should contain three subfolders: Side_0, Side_1, Side_2
 # Side_1: Main body (~90% of shape), depth = TOTAL_DEPTH_MM
 # Side_0 & Side_2: Closing ends, each total depth = 2 * (TOTAL_DEPTH_MM / Side_1_count)
-DATA_PATH = "/home/vector64/Documents/Patient_B/Cortes_tomografías"
+DATA_PATH = "/home/vector64/Documents/UDEM/9NO_SEMESTRE/PEF/Analisis_tomografia_reconstruccion/Patient_L/Cortes_tomografías"
 
 # =============================================================================
 # PROCESSING PARAMETERS
@@ -35,13 +35,15 @@ LOAD_SIDES = [True, True, True]  # Set to False to skip specific sides
 # VISUALIZATION AND EXPORT CONTROL
 # =============================================================================
 SHOW_3D_VISUALIZATION = False    # Set to False to skip matplotlib 3D visualization display
-EXPORT_OBJ_MODEL = True         # Set to False to skip OBJ file export
+EXPORT_GLB_MODEL = True         # Set to False to skip GLB file export
+HIGHLIGHT_SECTION1_LAYERS = True  # Highlight first/last Section_1 slices in red/blue
+HIGHLIGHT_THICKNESS_MM = 1.0     # Thickness of highlight layers in mm
 # Note: Interactive HTML is always saved regardless of SHOW_3D_VISUALIZATION
 
 # =============================================================================
 # OUTPUT FILES
 # =============================================================================
-OBJ_FILENAME = "/home/vector64/Documents/Patient_B/Models/patient_b_tomography_3d_model.obj"
+GLB_FILENAME = "/home/vector64/Documents/UDEM/9NO_SEMESTRE/PEF/Analisis_tomografia_reconstruccion/Patient_L/Models/tomography_model.glb"
 INTERACTIVE_HTML = "tomography_3d_interactive.html"
 
 # =============================================================================
